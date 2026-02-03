@@ -3,9 +3,16 @@ import cors from "cors";
 
 const app = express();
 
-app.use(cors({
-  origin: "*", // หรือ frontend domain จริง
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000", 
+      "https://sportory-blog.vercel.app/", 
+    ],
+  })
+);
+
 // app.use(cors());
 app.use(express.json());
 
@@ -16,6 +23,7 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ message: "OK" });
 });
+
 
 // Start server locally (not on Vercel)
 const isVercel = process.env.VERCEL;
