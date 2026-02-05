@@ -1,4 +1,4 @@
-// import dotenv/config
+
 import express from "express";
 import cors from "cors";
 import connectionPool from "./utils/db.mjs";
@@ -22,13 +22,18 @@ app.get("/", (req, res) => {
   res.send("Hello TechUp!");
 });
 
-app.get("/posts", async (req, res) => {
+app.get("/env-check", (req, res) => {
+  res.json({ hasDB: !!process.env.DATABASE_URL });
+});
+
+
+app.get("/p", async (req, res) => {
   try {
     const result = await connectionPool.query("SELECT * FROM posts");
     return  res.json(result.rows);
   }catch (error) {
     console.error("Error getting assignments:", error);
-    return res.status(500).json({ message: "Server could not read assignment because database connection" })
+    return res.status(500).json({ message: "Server could not read table because database connection" })
   }
 });
 
