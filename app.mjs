@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/env-check", (req, res) => {
-  res.json({ hasDB: !!process.env.DATABASE_URL });
+  res.json({ hasDB: !!process.env.CONNECTION_STRING });
 });
 
 
