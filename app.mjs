@@ -49,6 +49,54 @@ app.get("/posts/:postId", async (req, res) => {
 });
 
 
+app.get("/posts", async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 6, 1), 50);
+    const offset = (page - 1) * limit;
+
+    const totalResult = await connectionPool.query("SELECT COUNT(*) FROM posts");
+    const totalPosts = parseInt(totalResult.rows[0].count, 10);
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    const postsResult = await connectionPool.query(
+      `
+      SELECT
+        p.id,
+        p.image,
+        COALESCE(c.name, 'General') AS category,
+        p.title,
+        p.description,
+        -- ส่ง date เป็น string สวย ๆ เหมือน mock (จะได้ "11 September 2024")
+        TO_CHAR(p.date, 'DD FMMonth YYYY') AS date,
+        p.likes_count AS likes,
+        p.content
+      FROM posts p
+      LEFT JOIN categories c ON c.id = p.category_id
+      ORDER BY p.id DESC
+      LIMIT $1 OFFSET $2
+      `,
+      [limit, offset]
+    );
+
+    return res.status(200).json({
+      totalPosts,
+      totalPages,
+      currentPage: page,
+      limit,
+      posts: postsResult.rows,
+      nextPage: page < totalPages ? page + 1 : null,
+    });
+  } catch (error) {
+    console.error("ERROR /posts:", error);
+    return res.status(500).json({
+      message: "Server could not read posts",
+      error: error.message,
+    });
+  }
+});
+
+
 
 app.get("/health", (req, res) => {
   res.json({ message: "OK" });
