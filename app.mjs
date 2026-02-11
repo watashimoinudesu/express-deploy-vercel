@@ -116,45 +116,79 @@ app.get("/posts", async (req, res) => {
 });
 
 
-app.post("/posts", async (req, res) => {
+app.put("/posts/:postId", async (req, res) => {
   try {
-    const {
-      title,
-      image,
-      category_id,
-      description,
-      content,
-      status_id,
-    } = req.body;
-
-    // Basic validation
-    if (!title || !image || !content) {
-      return res.status(400).json({
-        message: "Title, image and content are required",
+    const postId = Number(req.params.postId);
+    if (!Number.isFinite(postId)) {
+      return res.status(404).json({
+        message: "Server could not find a requested post to update",
       });
     }
 
-    await connectionPool.query(
+    const { title, image, category_id, description, content, status_id } =
+      req.body;
+
+    // อัปเดตเฉพาะฟิลด์ที่ต้องการตาม spec
+    const result = await connectionPool.query(
       `
-      INSERT INTO posts
-        (title, image, category_id, description, content, status_id)
-      VALUES
-        ($1, $2, $3, $4, $5, $6)
+      UPDATE posts
+      SET
+        title = $1,
+        image = $2,
+        category_id = $3,
+        description = $4,
+        content = $5,
+        status_id = $6
+      WHERE id = $7
+      RETURNING id
       `,
-      [title, image, category_id, description, content, status_id]
+      [title, image, category_id, description, content, status_id, postId]
     );
 
-    return res.status(201).json({
-      message: "Created post sucessfully",
-    });
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "Server could not find a requested post to update",
+      });
+    }
+
+    return res.status(200).json({ message: "Updated post sucessfully" });
   } catch (error) {
-    console.error("ERROR POST /posts:", error);
+    console.error("ERROR PUT /posts/:postId:", error);
     return res.status(500).json({
-      message:
-        "Server could not create post because database connection",
+      message: "Server could not update post because database connection",
     });
   }
 });
+
+app.delete("/posts/:postId", async (req, res) => {
+  try {
+    const postId = Number(req.params.postId);
+    if (!Number.isFinite(postId)) {
+      return res.status(404).json({
+        message: "Server could not find a requested post to delete",
+      });
+    }
+
+    const result = await connectionPool.query(
+      "DELETE FROM posts WHERE id = $1 RETURNING id",
+      [postId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "Server could not find a requested post to delete",
+      });
+    }
+
+    return res.status(200).json({ message: "Deleted post sucessfully" });
+  } catch (error) {
+    console.error("ERROR DELETE /posts/:postId:", error);
+    return res.status(500).json({
+      message: "Server could not delete post because database connection",
+    });
+  }
+});
+
 
 
 
