@@ -10,7 +10,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:3000", 
-      "https://sportory-blog.vercel.app/", 
+      "https://sportory-blog.vercel.app", 
     ],
   })
 );
@@ -30,21 +30,40 @@ app.get("/env-check", (req, res) => {
 app.get("/posts/:postId", async (req, res) => {
   try {
     const postId = Number(req.params.postId);
-
+    if (!Number.isFinite(postId)) {
+      return res.status(400).json({ message: "Invalid postId" });
+    }
 
     const result = await connectionPool.query(
-      "SELECT * FROM posts WHERE id = $1",
+      `
+      SELECT
+        p.id,
+        p.image,
+        COALESCE(c.name, 'General') AS category,
+        p.title,
+        p.description,
+        TO_CHAR(p.date, 'DD FMMonth YYYY') AS date,
+        p.likes_count AS likes,
+        p.content
+      FROM posts p
+      LEFT JOIN categories c ON c.id = p.category_id
+      WHERE p.id = $1
+      `,
       [postId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Server could not find a requested post" });
+      return res.status(404).json({ message: "Post not found" });
     }
 
-    return res.status(200).json({ data: result.rows[0] });
+    // ✅ ส่ง object ตรง ๆ ไม่ห่อ { data: ... }
+    return res.status(200).json(result.rows[0]);
   } catch (error) {
-    console.error("Error getting question by ID:", error);
-    return res.status(500).json({ message: "Server could not read post because database connection" });
+    console.error("ERROR /posts/:postId:", error);
+    return res.status(500).json({
+      message: "Server could not read post because database connection",
+      error: error.message,
+    });
   }
 });
 
