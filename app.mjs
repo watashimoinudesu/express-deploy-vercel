@@ -116,6 +116,48 @@ app.get("/posts", async (req, res) => {
 });
 
 
+app.post("/posts", async (req, res) => {
+  try {
+    const {
+      title,
+      image,
+      category_id,
+      description,
+      content,
+      status_id,
+    } = req.body;
+
+    // Basic validation
+    if (!title || !image || !content) {
+      return res.status(400).json({
+        message: "Title, image and content are required",
+      });
+    }
+
+    await connectionPool.query(
+      `
+      INSERT INTO posts
+        (title, image, category_id, description, content, status_id)
+      VALUES
+        ($1, $2, $3, $4, $5, $6)
+      `,
+      [title, image, category_id, description, content, status_id]
+    );
+
+    return res.status(201).json({
+      message: "Created post sucessfully",
+    });
+  } catch (error) {
+    console.error("ERROR POST /posts:", error);
+    return res.status(500).json({
+      message:
+        "Server could not create post because database connection",
+    });
+  }
+});
+
+
+
 
 app.get("/health", (req, res) => {
   res.json({ message: "OK" });
