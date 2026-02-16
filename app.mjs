@@ -2,7 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import connectionPool from "./utils/db.mjs";
-import validatePostData from "./middleware/postValidation.mjs";
+// import validatePostData from "./middleware/postValidation.mjs";
+import { validatePostPayload } from "./middleware/postValidation.mjs";
 
 const app = express();
 
@@ -117,7 +118,7 @@ app.get("/posts", async (req, res) => {
 });
 
 
-app.put("/posts/:postId",validatePostData, async (req, res) => {
+app.put("/posts/:postId",validatePostPayload, async (req, res) => {
   try {
     const postId = Number(req.params.postId);
     if (!Number.isFinite(postId)) {
