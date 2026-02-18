@@ -12,7 +12,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const app = express();
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+
 
 
 
