@@ -85,9 +85,17 @@ authRouter.post("/register", async (req, res) => {
       message: "User created successfully",
       user: rows[0],
     });
+  // } catch (error) {
+  //   res.status(500).json({ error: "An error occurred during registration" });
+  // }
   } catch (error) {
-    res.status(500).json({ error: "An error occurred during registration" });
+  console.error("REGISTER ERROR:", error); // ✅ สำคัญมาก
+  return res.status(500).json({
+    error: "An error occurred during registration",
+    detail: error?.message || String(error),
+  });
   }
+
 });
 // Route สำหรับการเข้าสู่ระบบ (Login)
 authRouter.post("/login", async (req, res) => {
