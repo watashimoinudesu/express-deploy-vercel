@@ -26,6 +26,7 @@ const authRouter = Router();
 // ในขั้นตอนการลงทะเบียน เราจะตรวจสอบว่าชื่อผู้ใช้ที่ผู้ใช้เลือกนั้นซ้ำกับผู้ใช้อื่นหรือไม่ หากไม่ซ้ำ เราจะสร้างบัญชีผู้ใช้ใน Supabase Auth
 // และเพิ่มข้อมูลผู้ใช้ในตาราง users ของฐานข้อมูล PostgreSQL
 authRouter.post("/register", async (req, res) => {
+  const supabase = getSupabase();
   // ดึงข้อมูลที่ user ส่งมาจาก request body ซึ่งประกอบด้วย email, password, username และ name
   const { email, password, username, name } = req.body;
   try {
