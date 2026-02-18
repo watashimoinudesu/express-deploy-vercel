@@ -1,13 +1,23 @@
 import { Router } from "express";
 import { createClient } from "@supabase/supabase-js";
+
 import connectionPool from "../utils/db.mjs";
 
 // สร้าง Supabase client ด้วย URL และ ANON KEY จาก environment variables เพื่อเชื่อมต่อกับ Supabase Auth
 // เราจะใช้ Supabase Auth สำหรับการจัดการผู้ใช้และการตรวจสอบสิทธิ์ ในขณะที่ข้อมูลผู้ใช้เพิ่มเติมจะถูกเก็บในฐานข้อมูล PostgreSQL ของเรา
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY,
-);
+// const supabase = createClient(
+//   process.env.SUPABASE_URL,
+//   process.env.SUPABASE_ANON_KEY,
+// );
+function getSupabase() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY; // หรือใช้ SERVICE_ROLE_KEY ถ้าต้อง bypass RLS
+
+  if (!supabaseUrl) throw new Error("Missing SUPABASE_URL");
+  if (!supabaseKey) throw new Error("Missing SUPABASE_ANON_KEY");
+
+  return createClient(supabaseUrl, supabaseKey);
+}
 
 // สร้าง Express Router สำหรับจัดการเส้นทางที่เกี่ยวข้องกับการตรวจสอบสิทธิ์ (Authentication)
 const authRouter = Router();
