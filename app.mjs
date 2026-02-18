@@ -4,10 +4,8 @@ import cors from "cors";
 import connectionPool from "./utils/db.mjs";
 // import validatePostData from "./middleware/postValidation.mjs";
 import { validatePostPayload } from "./middleware/postValidation.mjs";
+import authRouter from "./routes/auth.mjs";
 
-import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 
 const app = express();
@@ -36,7 +34,7 @@ app.get("/", (req, res) => {
 app.get("/env-check", (req, res) => {
   res.json({ hasDB: !!process.env.CONNECTION_STRING });
 });
-
+app.use("/auth", authRouter);
 
 app.get("/posts/:postId", async (req, res) => {
   try {
